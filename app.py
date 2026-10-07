@@ -1,11 +1,8 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 from src.data_cleaning import load_data, clean_data
-from src.calculations import get_overview_kpis, calculate_state_summary
 
 
 # ============================================================
@@ -13,7 +10,7 @@ from src.calculations import get_overview_kpis, calculate_state_summary
 # ============================================================
 
 st.set_page_config(
-    page_title="Rural Connectivity | Operations Dashboard",
+    page_title="PRATAP | Rural Connectivity",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -21,7 +18,7 @@ st.set_page_config(
 
 
 # ============================================================
-# THEME
+# THEME / POWER BI STYLE
 # ============================================================
 
 st.markdown(
@@ -30,23 +27,17 @@ st.markdown(
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     :root {
-        --bg: #f3f7fb;
-        --bg-2: #edf5ff;
+        --bg: #f5f6f8;
         --card: #ffffff;
-        --text: #101828;
-        --muted: #475467;
-        --line: #dfe5ef;
-        --blue: #2367d2;
-        --blue-soft: #edf4ff;
-        --green: #10A571;
-        --green-soft: #ebfaf3;
-        --amber: #F59F0B;
-        --amber-soft: #fff7e8;
-        --red: #E15B4C;
-        --red-soft: #fff1ef;
-        --purple: #7857d9;
-        --purple-soft: #f3efff;
-        --shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+        --text: #111827;
+        --muted: #667085;
+        --line: #e4e7ec;
+        --blue: #2563eb;
+        --blue-soft: #eff6ff;
+        --green: #16a34a;
+        --amber: #d97706;
+        --red: #dc2626;
+        --navy: #111827;
     }
 
     * {
@@ -54,14 +45,12 @@ st.markdown(
     }
 
     .stApp {
-        background:
-            radial-gradient(circle at top left, rgba(35,103,210,0.08), transparent 30%),
-            linear-gradient(180deg, #f6f9fc 0%, #eef5ff 100%);
+        background: var(--bg);
     }
 
     .block-container {
-        max-width: 1500px;
-        padding: 1.2rem 1.6rem 2.2rem 1.6rem;
+        max-width: 1550px;
+        padding: 1rem 1.35rem 2rem 1.35rem;
     }
 
     #MainMenu, footer {
@@ -74,9 +63,8 @@ st.markdown(
 
     /* Sidebar */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-        border-right: none;
-        box-shadow: inset -1px 0 0 rgba(148, 163, 184, 0.16);
+        background: #111827;
+        border-right: 1px solid #1f2937;
     }
 
     section[data-testid="stSidebar"] * {
@@ -87,126 +75,106 @@ st.markdown(
         color: #9ca3af !important;
     }
 
-    section[data-testid="stSidebar"] hr {
-        border-color: rgba(148, 163, 184, 0.2);
-    }
-
     .brand {
-        padding: 0.25rem 0 1.1rem 0;
+        padding: 0.2rem 0 0.8rem 0;
     }
 
-    .brand-icon {
-        display: inline-flex;
+    .brand-mark {
         width: 42px;
         height: 42px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        font-size: 18px;
+        background: #2563eb;
+        border-radius: 10px;
+        font-size: 20px;
         margin-bottom: 0.7rem;
-        box-shadow: 0 10px 18px rgba(59,130,246,0.28);
     }
 
     .brand-title {
-        font-size: 1.05rem;
-        font-weight: 800;
         color: #ffffff;
-        letter-spacing: -0.02em;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
     }
 
     .brand-subtitle {
-        font-size: 0.72rem;
-        color: #a5b4cf;
-        margin-top: 0.15rem;
-        letter-spacing: 0.08em;
+        color: #9ca3af;
+        font-size: 0.68rem;
         text-transform: uppercase;
+        letter-spacing: 0.09em;
+        margin-top: 0.2rem;
     }
 
-    .side-label {
-        color: #6b7280 !important;
-        font-size: 0.67rem !important;
-        font-weight: 700 !important;
-        letter-spacing: .08em;
+    .side-heading {
+        color: #6b7280;
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        margin-top: 1.1rem;
+        margin: 1rem 0 0.4rem 0;
     }
 
     /* Header */
-    .top-header {
+    .dashboard-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
         gap: 1rem;
-        margin-bottom: 1.2rem;
-        padding: 1.05rem 1.15rem;
-        border: 1px solid rgba(35,103,210,0.12);
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(235,244,255,0.92));
-        box-shadow: var(--shadow);
+        margin-bottom: 0.75rem;
     }
 
     .eyebrow {
         color: var(--blue);
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         font-weight: 800;
-        letter-spacing: .08em;
+        letter-spacing: 0.09em;
         text-transform: uppercase;
-        margin-bottom: 0.35rem;
     }
 
-    .title {
+    .page-title {
         color: var(--text);
-        font-size: 2.1rem;
-        line-height: 1.1;
+        font-size: 1.75rem;
+        line-height: 1.15;
         font-weight: 800;
         letter-spacing: -0.04em;
+        margin-top: 0.12rem;
     }
 
-    .subtitle {
+    .page-subtitle {
         color: var(--muted);
-        font-size: 0.87rem;
-        margin-top: 0.38rem;
+        font-size: 0.76rem;
+        margin-top: 0.3rem;
     }
 
-    .source-pill {
+    .data-status {
         background: #ffffff;
-        border: 1px solid rgba(35,103,210,0.15);
-        border-radius: 999px;
-        padding: 0.52rem 0.9rem;
-        color: #334155;
-        font-size: 0.72rem;
-        font-weight: 700;
-        box-shadow: 0 8px 22px rgba(59, 130, 246, 0.08);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.45rem 0.7rem;
+        color: #475467;
+        font-size: 0.67rem;
         white-space: nowrap;
     }
 
-    .status-dot {
-        display: inline-block;
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        background: var(--green);
-        margin-right: 7px;
-        box-shadow: 0 0 0 5px rgba(16, 165, 113, 0.12);
+    /* Filter strip */
+    .filter-title {
+        color: #344054;
+        font-size: 0.72rem;
+        font-weight: 800;
+        margin: 0.15rem 0 0.35rem 0;
     }
 
     /* KPI */
     .kpi {
-        background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,1));
+        background: var(--card);
         border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 0.9rem 1rem 0.8rem 1rem;
-        min-height: 132px;
-        box-shadow: var(--shadow);
+        border-radius: 9px;
+        padding: 0.72rem 0.8rem;
+        min-height: 91px;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.035);
         position: relative;
         overflow: hidden;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .kpi:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 26px rgba(15, 23, 42, 0.08);
     }
 
     .kpi::before {
@@ -215,105 +183,106 @@ st.markdown(
         left: 0;
         top: 0;
         bottom: 0;
-        width: 5px;
+        width: 3px;
         background: var(--blue);
     }
 
     .kpi.green::before { background: var(--green); }
     .kpi.amber::before { background: var(--amber); }
     .kpi.red::before { background: var(--red); }
-    .kpi.purple::before { background: var(--purple); }
 
     .kpi-label {
-        color: var(--muted);
-        font-size: 0.7rem;
+        color: #667085;
+        font-size: 0.62rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
         text-transform: uppercase;
-        margin-bottom: 0.65rem;
+        letter-spacing: 0.06em;
     }
 
     .kpi-value {
-        color: var(--text);
-        font-size: 1.9rem;
+        color: #101828;
+        font-size: 1.48rem;
         line-height: 1;
         font-weight: 800;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.035em;
+        margin-top: 0.42rem;
     }
 
     .kpi-foot {
-        color: #79859a;
-        font-size: 0.7rem;
-        margin-top: 0.7rem;
-        line-height: 1.4;
+        color: #98a2b3;
+        font-size: 0.61rem;
+        margin-top: 0.35rem;
     }
 
-    /* Sections */
-    .section {
-        margin-top: 1.2rem;
-        margin-bottom: 0.5rem;
-    }
-
+    /* Section / panel */
     .section-title {
-        color: var(--text);
-        font-size: 1rem;
-        font-weight: 750;
+        color: #101828;
+        font-size: 0.91rem;
+        font-weight: 800;
+        margin: 0.85rem 0 0.35rem 0;
     }
 
     .section-subtitle {
-        color: var(--muted);
-        font-size: 0.72rem;
-        margin-top: 0.15rem;
+        color: #667085;
+        font-size: 0.68rem;
+        margin-top: -0.2rem;
+        margin-bottom: 0.45rem;
     }
 
     .panel {
         background: #ffffff;
         border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 0.75rem 0.85rem 0.45rem 0.85rem;
-        box-shadow: 0 2px 5px rgba(16,24,40,.025);
+        border-radius: 9px;
+        padding: 0.35rem 0.55rem 0.15rem 0.55rem;
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.025);
     }
 
-    /* Insight cards */
-    .insight {
+    .mini-stat {
         background: #ffffff;
         border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 0.75rem 0.85rem;
-        min-height: 92px;
+        border-radius: 8px;
+        padding: 0.65rem 0.75rem;
+        min-height: 70px;
     }
 
-    .insight-label {
-        color: #98a2b3;
-        font-size: 0.66rem;
+    .mini-label {
+        color: #667085;
+        font-size: 0.62rem;
+        font-weight: 700;
         text-transform: uppercase;
-        font-weight: 750;
-        letter-spacing: .06em;
+        letter-spacing: 0.05em;
     }
 
-    .insight-value {
-        color: var(--text);
-        font-size: 1.18rem;
+    .mini-value {
+        color: #101828;
+        font-size: 1.15rem;
         font-weight: 800;
-        margin-top: 0.25rem;
-    }
-
-    .insight-text {
-        color: var(--muted);
-        font-size: 0.7rem;
         margin-top: 0.2rem;
-        line-height: 1.4;
     }
 
-    /* Footer */
     .footer {
         color: #98a2b3;
         text-align: center;
-        font-size: 0.65rem;
-        margin-top: 2rem;
-        padding-top: 1rem;
+        font-size: 0.62rem;
+        margin-top: 1.2rem;
+        padding-top: 0.7rem;
         border-top: 1px solid var(--line);
     }
+
+    /* Streamlit widgets */
+    div[data-testid="stMetric"] {
+        background: #ffffff;
+    }
+
+    div[data-testid="stDataFrame"] {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+    }
+
+    div[data-baseweb="select"] > div {
+        border-radius: 7px;
+    }
+
     </style>
     """,
     unsafe_allow_html=True,
@@ -356,7 +325,7 @@ def fmt_pct(value):
     return f"{value:.1f}%"
 
 
-def kpi(label, value, foot, accent="blue"):
+def kpi(label, value, foot="", accent="blue"):
     st.markdown(
         f"""
         <div class="kpi {accent}">
@@ -369,29 +338,44 @@ def kpi(label, value, foot, accent="blue"):
     )
 
 
-def section(title, subtitle):
+def section(title, subtitle=""):
     st.markdown(
         f"""
-        <div class="section">
-            <div class="section-title">{title}</div>
-            <div class="section-subtitle">{subtitle}</div>
-        </div>
+        <div class="section-title">{title}</div>
+        <div class="section-subtitle">{subtitle}</div>
         """,
         unsafe_allow_html=True,
     )
 
 
-def insight(label, value, text):
-    st.markdown(
-        f"""
-        <div class="insight">
-            <div class="insight-label">{label}</div>
-            <div class="insight-value">{value}</div>
-            <div class="insight-text">{text}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+def chart_layout(fig, height=300):
+    fig.update_layout(
+        template="plotly_white",
+        height=height,
+        margin=dict(l=12, r=12, t=25, b=8),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(family="Inter", size=10, color="#344054"),
+        hoverlabel=dict(font_size=10),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.01,
+            x=0,
+            font=dict(size=9),
+        ),
     )
+    fig.update_xaxes(
+        showgrid=False,
+        linecolor="#e4e7ec",
+        title=None,
+    )
+    fig.update_yaxes(
+        gridcolor="#eaecf0",
+        zeroline=False,
+        title=None,
+    )
+    return fig
 
 
 # ============================================================
@@ -402,9 +386,9 @@ with st.sidebar:
     st.markdown(
         """
         <div class="brand">
-            <div class="brand-icon">📡</div>
-            <div class="brand-title">Rural Connectivity</div>
-            <div class="brand-subtitle">Operations Analytics</div>
+            <div class="brand-mark">📡</div>
+            <div class="brand-title">PRATAP</div>
+            <div class="brand-subtitle">Rural Connectivity Analytics</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -412,36 +396,128 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("DASHBOARD", unsafe_allow_html=True)
+    st.markdown('<div class="side-heading">Dashboard</div>', unsafe_allow_html=True)
+
     page = st.radio(
         "Dashboard",
-        ["Executive Overview", "Performance & Risk"],
+        ["Executive Overview", "Performance & Risk", "GP Explorer"],
         label_visibility="collapsed",
     )
 
-    st.markdown("FILTERS", unsafe_allow_html=True)
+    st.markdown('<div class="side-heading">Filters</div>', unsafe_allow_html=True)
 
-    states = sorted(df["circle"].dropna().unique().tolist())
+    circles = sorted(df["circle"].dropna().unique().tolist())
 
-    selected_states = st.multiselect(
-        "State",
-        states,
-        default=states,
+    selected_circles = st.multiselect(
+        "Circle",
+        circles,
+        default=circles,
     )
 
-    if not selected_states:
-        st.warning("Select at least one state.")
-        st.stop()
+    if selected_circles:
+        district_options = sorted(
+            df.loc[df["circle"].isin(selected_circles), "district"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+    else:
+        district_options = []
+
+    selected_districts = st.multiselect(
+        "District",
+        district_options,
+        default=[],
+    )
+
+    district_mask = (
+        df["circle"].isin(selected_circles)
+        if selected_circles
+        else pd.Series(False, index=df.index)
+    )
+
+    if selected_districts:
+        district_mask &= df["district"].isin(selected_districts)
+
+    block_options = sorted(
+        df.loc[district_mask, "block"]
+        .dropna()
+        .unique()
+        .tolist()
+    )
+
+    selected_blocks = st.multiselect(
+        "Block",
+        block_options,
+        default=[],
+    )
+
+    working_mask = district_mask.copy()
+
+    if selected_blocks:
+        working_mask &= df["block"].isin(selected_blocks)
+
+    gp_options = sorted(
+        df.loc[working_mask, "gp_code"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    selected_gps = st.multiselect(
+        "GP / GP Code",
+        gp_options,
+        default=[],
+        help="Leave empty to include all GPs in the current Circle / District / Block selection.",
+    )
+
+    hoto_options = sorted(
+        df.loc[working_mask, "block_hoto_status"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    selected_hoto = st.multiselect(
+        "HOTO Status",
+        hoto_options,
+        default=[],
+    )
 
     st.divider()
 
-    st.markdown("DATASET", unsafe_allow_html=True)
-    st.caption("GP Wise Data")
+    st.markdown('<div class="side-heading">Dataset</div>', unsafe_allow_html=True)
     st.caption(f"{len(df):,} GP records")
     st.caption(f"{len(df.columns)} source columns")
+    st.caption("Source: GP Wise Data")
 
 
-filtered = df[df["circle"].isin(selected_states)].copy()
+# ============================================================
+# APPLY FILTERS
+# ============================================================
+
+filtered = df.copy()
+
+if selected_circles:
+    filtered = filtered[filtered["circle"].isin(selected_circles)]
+else:
+    filtered = filtered.iloc[0:0]
+
+if selected_districts:
+    filtered = filtered[filtered["district"].isin(selected_districts)]
+
+if selected_blocks:
+    filtered = filtered[filtered["block"].isin(selected_blocks)]
+
+if selected_gps:
+    filtered = filtered[filtered["gp_code"].astype(str).isin(selected_gps)]
+
+if selected_hoto:
+    filtered = filtered[
+        filtered["block_hoto_status"].astype(str).isin(selected_hoto)
+    ]
 
 
 # ============================================================
@@ -450,15 +526,15 @@ filtered = df[df["circle"].isin(selected_states)].copy()
 
 st.markdown(
     """
-    <div class="top-header">
+    <div class="dashboard-header">
         <div>
             <div class="eyebrow">Operations Intelligence</div>
-            <div class="title">Rural Connectivity Dashboard</div>
-            <div class="subtitle">
-                GP network coverage, HOTO, AMC and operational performance across the selected operating states.
+            <div class="page-title">Rural Connectivity Dashboard</div>
+            <div class="page-subtitle">
+                GP network coverage, HOTO, AMC and operational performance.
             </div>
         </div>
-        <div class="source-pill"><span class="status-dot"></span>GP Wise Data | 16K+ records</div>
+        <div class="data-status">● Live dashboard dataset</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -466,14 +542,60 @@ st.markdown(
 
 
 # ============================================================
-# CALCULATIONS
+# KPI CALCULATIONS
 # ============================================================
 
-# Main KPIs are calculated through the project's calculation layer.
-all_kpis = get_overview_kpis(filtered)
+total_gps = int((filtered["gp_type"] == "Existing").sum())
+hoto_done = int((filtered["block_hoto_status"] == "Done").sum())
+amc_gps = int(filtered["amc_date"].notna().sum())
 
-# State summary
-state_summary = calculate_state_summary(filtered)
+hoto_pct = (hoto_done / total_gps * 100) if total_gps else 0
+amc_pct = (amc_gps / total_gps * 100) if total_gps else 0
+
+uptime = (
+    pd.to_numeric(filtered["oct-26"], errors="coerce")
+    if "oct-26" in filtered.columns
+    else pd.Series(dtype=float)
+)
+
+valid_uptime = uptime.dropna()
+
+avg_uptime = valid_uptime.mean() if len(valid_uptime) else None
+healthy_gps = int((valid_uptime >= 98).sum()) if len(valid_uptime) else 0
+critical_gps = int((valid_uptime == 0).sum()) if len(valid_uptime) else 0
+below85_gps = int((valid_uptime < 85).sum()) if len(valid_uptime) else 0
+
+
+# ============================================================
+# KPI ROW
+# ============================================================
+
+section("Network Snapshot", "Current values based on the selected filters")
+
+k1, k2, k3, k4, k5, k6 = st.columns(6, gap="small")
+
+with k1:
+    kpi("Total GPs", fmt_num(total_gps), "Existing GP records", "blue")
+
+with k2:
+    kpi("HOTO Done", fmt_num(hoto_done), "HOTO status = Done", "green")
+
+with k3:
+    kpi("HOTO Completion", fmt_pct(hoto_pct), "Completed / selected GPs", "green")
+
+with k4:
+    kpi("AMC GPs", fmt_num(amc_gps), "AMC Date available", "amber")
+
+with k5:
+    kpi("AMC Coverage", fmt_pct(amc_pct), "AMC / selected GPs", "amber")
+
+with k6:
+    kpi(
+        "Avg MTD Uptime",
+        fmt_pct(avg_uptime) if avg_uptime is not None else "—",
+        "Oct-26 GP uptime",
+        "blue",
+    )
 
 
 # ============================================================
@@ -483,129 +605,58 @@ state_summary = calculate_state_summary(filtered)
 if page == "Executive Overview":
 
     section(
-        "Network Snapshot",
-        "Current network population and operational coverage for the selected states",
+        "Network Performance",
+        "Circle-level comparison of HOTO, AMC and network uptime",
     )
 
-    # 7 KPI cards
-    c1, c2, c3, c4 = st.columns(4, gap="medium")
+    # ---------------------------
+    # Row 1: Circle charts
+    # ---------------------------
+
+    circle_summary = (
+        filtered.groupby("circle")
+        .agg(
+            total_gps=("gp_code", "nunique"),
+            hoto_done=("block_hoto_status", lambda x: (x == "Done").sum()),
+            amc_gps=("amc_date", lambda x: x.notna().sum()),
+        )
+        .reset_index()
+    )
+
+    circle_summary["hoto_pct"] = (
+        circle_summary["hoto_done"] / circle_summary["total_gps"] * 100
+    )
+
+    circle_summary["amc_pct"] = (
+        circle_summary["amc_gps"] / circle_summary["total_gps"] * 100
+    )
+
+    c1, c2 = st.columns(2, gap="small")
 
     with c1:
-        kpi(
-            "Existing GPs",
-            fmt_num(all_kpis["total_existing_gps"]),
-            "Current GP population",
-            "blue",
-        )
-
-    with c2:
-        kpi(
-            "Revised Existing GPs",
-            fmt_num(all_kpis["revised_existing_gps"]),
-            "After source-level deductions",
-            "purple",
-        )
-
-    with c3:
-        kpi(
-            "HOTO Done",
-            fmt_num(all_kpis["hoto_done_gps"]),
-            "GPs with HOTO status = Done",
-            "green",
-        )
-
-    with c4:
-        kpi(
-            "HOTO Completion",
-            fmt_pct(all_kpis["hoto_percentage"]),
-            "Against current dashboard denominator",
-            "green",
-        )
-
-    c5, c6, c7 = st.columns(3, gap="medium")
-
-    with c5:
-        kpi(
-            "AMC GPs",
-            fmt_num(all_kpis["amc_gps"]),
-            "GPs with AMC Date",
-            "amber",
-        )
-
-    with c6:
-        kpi(
-            "AMC Coverage",
-            fmt_pct(all_kpis["amc_percentage"]),
-            "Against current dashboard denominator",
-            "amber",
-        )
-
-    with c7:
-        kpi(
-            "AMC Fibre",
-            f'{fmt_num(all_kpis["amc_fibre_rkm"])} RKM',
-            "AMC-linked route kilometres",
-            "blue",
-        )
-
-    # --------------------------------------------------------
-    # STATE ANALYSIS
-    # --------------------------------------------------------
-
-    section(
-        "State Performance",
-        "How the three operating states compare across network, HOTO and AMC",
-    )
-
-    state_chart = state_summary.rename(
-        columns={
-            "circle": "State",
-            "existing_gps": "Existing GPs",
-            "hoto_done_gps": "HOTO Done",
-            "amc_gps": "AMC GPs",
-        }
-    )
-
-    left, right = st.columns([1.7, 1], gap="large")
-
-    with left:
         st.markdown('<div class="panel">', unsafe_allow_html=True)
 
         fig = px.bar(
-            state_chart,
-            x="State",
-            y=["Existing GPs", "HOTO Done", "AMC GPs"],
+            circle_summary,
+            x="circle",
+            y=["hoto_done", "amc_gps"],
             barmode="group",
             text_auto=".0f",
+            labels={
+                "circle": "",
+                "value": "GPs",
+                "variable": "",
+            },
         )
 
-        fig.update_layout(
-            template="plotly_white",
-            height=390,
-            margin=dict(l=10, r=10, t=25, b=10),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                x=0,
-            ),
-            font=dict(family="Inter", size=11),
-            plot_bgcolor="white",
-            paper_bgcolor="white",
+        fig.for_each_trace(
+            lambda trace: trace.update(
+                name="HOTO Done" if trace.name == "hoto_done" else "AMC GPs"
+            )
         )
 
-        fig.update_traces(
-            textposition="outside",
-            cliponaxis=False,
-        )
-
-        fig.update_xaxes(showgrid=False, title=None)
-        fig.update_yaxes(
-            title="GP Count",
-            gridcolor="#eaecf0",
-            zeroline=False,
-        )
-
+        fig = chart_layout(fig, 285)
+        fig.update_yaxes(title="GP Count")
         st.plotly_chart(
             fig,
             use_container_width=True,
@@ -614,184 +665,211 @@ if page == "Executive Overview":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with right:
+    with c2:
         st.markdown('<div class="panel">', unsafe_allow_html=True)
 
-        table = state_chart.copy()
+        uptime_state = (
+            pd.DataFrame(
+                {
+                    "circle": filtered["circle"],
+                    "uptime": uptime,
+                }
+            )
+            .dropna()
+            .groupby("circle", as_index=False)["uptime"]
+            .mean()
+        )
 
-        for col in ["Existing GPs", "HOTO Done", "AMC GPs"]:
-            table[col] = table[col].map(fmt_num)
+        fig = px.bar(
+            uptime_state,
+            x="circle",
+            y="uptime",
+            text="uptime",
+            labels={"circle": "", "uptime": "Average uptime"},
+        )
 
-        st.dataframe(
-            table,
-            hide_index=True,
+        fig.update_traces(
+            texttemplate="%{text:.1f}%",
+            textposition="outside",
+        )
+
+        fig = chart_layout(fig, 285)
+        fig.update_yaxes(title="Average uptime", range=[0, 100], ticksuffix="%")
+        st.plotly_chart(
+            fig,
             use_container_width=True,
-            height=340,
+            config={"displayModeBar": False},
         )
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # --------------------------------------------------------
-    # HEALTH INDICATORS
-    # --------------------------------------------------------
+    # ---------------------------
+    # Row 2: Uptime distribution + risk
+    # ---------------------------
 
     section(
-        "Network Health",
-        "Quick operational indicators that highlight healthy coverage and areas requiring attention",
+        "Operational Health",
+        "Where the network is healthy and where attention is required",
     )
 
-    # These columns are available in the source structure.
-    # We use the Oct-26 GP-level value when numeric.
-    uptime_col = "oct-26"
+    c3, c4 = st.columns(2, gap="small")
 
-    if uptime_col in filtered.columns:
-        uptime = pd.to_numeric(filtered[uptime_col], errors="coerce")
+    with c3:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
 
-        valid_uptime = uptime.dropna()
-
-        if len(valid_uptime) > 0:
-            above_98 = (valid_uptime >= 98).sum()
-            zero_uptime = (valid_uptime == 0).sum()
-            below_85 = (valid_uptime < 85).sum()
-
-            # State-wise average uptime
-            uptime_state = (
-                pd.DataFrame({
-                    "State": filtered["circle"],
-                    "Uptime": uptime,
-                })
-                .dropna()
-                .groupby("State", as_index=False)["Uptime"]
-                .mean()
+        if len(valid_uptime):
+            bands = pd.cut(
+                uptime,
+                bins=[-0.001, 0, 85, 95, 98, 100.001],
+                labels=["0%", ">0–85%", ">85–95%", ">95–98%", "≥98%"],
+                include_lowest=True,
             )
 
-            h1, h2, h3 = st.columns(3, gap="medium")
-
-            with h1:
-                insight(
-                    "Healthy GPs",
-                    fmt_num(above_98),
-                    "GPs at or above 98% Oct-26 uptime",
+            distribution = (
+                pd.DataFrame(
+                    {
+                        "circle": filtered["circle"],
+                        "band": bands,
+                    }
                 )
+                .dropna()
+                .groupby(["circle", "band"], observed=False)
+                .size()
+                .reset_index(name="GPs")
+            )
 
-            with h2:
-                insight(
-                    "Critical GPs",
-                    fmt_num(zero_uptime),
-                    "GPs reporting 0% Oct-26 uptime",
-                )
+            fig = px.bar(
+                distribution,
+                x="circle",
+                y="GPs",
+                color="band",
+                barmode="stack",
+                text_auto=True,
+                labels={"circle": "", "band": "", "GPs": "GP Count"},
+            )
 
-            with h3:
-                insight(
-                    "Below 85%",
-                    fmt_num(below_85),
-                    "GPs below 85% Oct-26 uptime",
-                )
-
-            a, b = st.columns(2, gap="large")
-
-            with a:
-                st.markdown('<div class="panel">', unsafe_allow_html=True)
-
-                fig_u = px.bar(
-                    uptime_state,
-                    x="State",
-                    y="Uptime",
-                    text="Uptime",
-                    range_y=[0, 100],
-                )
-
-                fig_u.update_traces(
-                    texttemplate="%{text:.1f}%",
-                    textposition="outside",
-                )
-
-                fig_u.update_layout(
-                    title="Average GP Uptime by State",
-                    title_font_size=13,
-                    height=330,
-                    margin=dict(l=10, r=10, t=45, b=10),
-                    plot_bgcolor="white",
-                    paper_bgcolor="white",
-                    showlegend=False,
-                )
-
-                fig_u.update_xaxes(showgrid=False)
-                fig_u.update_yaxes(
-                    title="Average uptime",
-                    ticksuffix="%",
-                    gridcolor="#eaecf0",
-                )
-
-                st.plotly_chart(
-                    fig_u,
-                    use_container_width=True,
-                    config={"displayModeBar": False},
-                )
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with b:
-                st.markdown('<div class="panel">', unsafe_allow_html=True)
-
-                labels = ["≥98%", "85–<98%", "<85%"]
-                values = [
-                    above_98,
-                    max(len(valid_uptime) - above_98 - below_85, 0),
-                    below_85,
-                ]
-
-                fig_d = go.Figure(
-                    data=[
-                        go.Pie(
-                            labels=labels,
-                            values=values,
-                            hole=0.68,
-                            textinfo="label+percent",
-                        )
-                    ]
-                )
-
-                fig_d.update_layout(
-                    title="GP Uptime Distribution",
-                    title_font_size=13,
-                    height=330,
-                    margin=dict(l=10, r=10, t=45, b=10),
-                    showlegend=False,
-                    paper_bgcolor="white",
-                )
-
-                st.plotly_chart(
-                    fig_d,
-                    use_container_width=True,
-                    config={"displayModeBar": False},
-                )
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
+            fig = chart_layout(fig, 300)
+            fig.update_yaxes(title="GP Count")
+            st.plotly_chart(
+                fig,
+                use_container_width=True,
+                config={"displayModeBar": False},
+            )
         else:
-            st.info("No numeric Oct-26 uptime values are available for the selected states.")
+            st.info("No numeric Oct-26 uptime values are available.")
 
-    else:
-        st.info("The Oct-26 GP uptime field is not available in the processed dataset.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # --------------------------------------------------------
-    # RECONCILIATION
-    # --------------------------------------------------------
+    with c4:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
 
-    with st.expander("Source reconciliation notes"):
+        risk = (
+            filtered.groupby("circle")
+            .agg(
+                critical=("gp_code", lambda x: 0),
+                below85=("gp_code", lambda x: 0),
+            )
+            .reset_index()
+        )
 
-        st.markdown(
-            """
-            **Revised Existing GPs:** raw GP-level calculation = **15,987**;
-            source summary = **15,978**.
+        if len(filtered):
+            risk = (
+                pd.DataFrame(
+                    {
+                        "circle": filtered["circle"],
+                        "uptime": uptime,
+                    }
+                )
+                .groupby("circle", as_index=False)
+                .agg(
+                    critical=("uptime", lambda x: (x == 0).sum()),
+                    below85=("uptime", lambda x: (x < 85).sum()),
+                )
+            )
 
-            **AMC Fibre RKM:** raw GP-level calculation = **35,901 RKM**;
-            source summary = **35,976 RKM**.
+        risk_long = risk.melt(
+            id_vars="circle",
+            value_vars=["critical", "below85"],
+            var_name="risk",
+            value_name="GPs",
+        )
 
-            The dashboard retains the raw GP-level calculations instead
-            of forcing them to match the summary.
-            """
+        risk_long["risk"] = risk_long["risk"].map(
+            {
+                "critical": "0% Uptime",
+                "below85": "<85% Uptime",
+            }
+        )
+
+        fig = px.bar(
+            risk_long,
+            x="GPs",
+            y="circle",
+            color="risk",
+            barmode="group",
+            orientation="h",
+            text_auto=True,
+            labels={"circle": "", "GPs": "GP Count", "risk": ""},
+        )
+
+        fig = chart_layout(fig, 300)
+        fig.update_yaxes(title="")
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            config={"displayModeBar": False},
+        )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---------------------------
+    # Bottom-performing GP table
+    # ---------------------------
+
+    section(
+        "Attention Required",
+        "Lowest uptime GPs in the current filter selection",
+    )
+
+    if len(valid_uptime):
+        bottom = filtered.copy()
+        bottom["uptime_value"] = uptime
+
+        bottom = bottom[
+            [
+                "gp",
+                "gp_code",
+                "circle",
+                "district",
+                "block",
+                "block_hoto_status",
+                "amc_date",
+                "uptime_value",
+            ]
+        ].sort_values("uptime_value", ascending=True).head(10)
+
+        bottom = bottom.rename(
+            columns={
+                "gp": "GP",
+                "gp_code": "GP Code",
+                "circle": "Circle",
+                "district": "District",
+                "block": "Block",
+                "block_hoto_status": "HOTO",
+                "amc_date": "AMC Date",
+                "uptime_value": "Oct-26 Uptime",
+            }
+        )
+
+        bottom["Oct-26 Uptime"] = bottom["Oct-26 Uptime"].map(
+            lambda x: f"{x:.1f}%"
+        )
+
+        st.dataframe(
+            bottom,
+            use_container_width=True,
+            hide_index=True,
+            height=285,
         )
 
 
@@ -799,76 +877,33 @@ if page == "Executive Overview":
 # PERFORMANCE & RISK
 # ============================================================
 
-else:
+elif page == "Performance & Risk":
 
     section(
         "Performance & Risk",
-        "Operational performance, uptime distribution and attention areas",
+        "Detailed operational view of uptime and network risk",
     )
 
-    # --------------------------------------------------------
-    # RISK METRICS
-    # --------------------------------------------------------
-
-    uptime_col = "oct-26"
-
-    if uptime_col in filtered.columns:
-        uptime = pd.to_numeric(filtered[uptime_col], errors="coerce")
-        valid = uptime.dropna()
-
-        healthy = int((valid >= 98).sum())
-        zero = int((valid == 0).sum())
-        below85 = int((valid < 85).sum())
-    else:
-        healthy = zero = below85 = 0
-
-    r1, r2, r3, r4 = st.columns(4, gap="medium")
+    r1, r2, r3, r4 = st.columns(4, gap="small")
 
     with r1:
-        kpi(
-            "≥98% Uptime",
-            fmt_num(healthy),
-            "Healthy GP records",
-            "green",
-        )
+        kpi("≥98% Uptime", fmt_num(healthy_gps), "Healthy GP records", "green")
 
     with r2:
-        kpi(
-            "0% Uptime",
-            fmt_num(zero),
-            "Critical GP records",
-            "red",
-        )
+        kpi("0% Uptime", fmt_num(critical_gps), "Critical GP records", "red")
 
     with r3:
-        kpi(
-            "<85% Uptime",
-            fmt_num(below85),
-            "Attention required",
-            "amber",
-        )
+        kpi("<85% Uptime", fmt_num(below85_gps), "Attention required", "amber")
 
     with r4:
-        kpi(
-            "AMC GPs",
-            fmt_num(all_kpis["amc_gps"]),
-            "Current selected states",
-            "blue",
-        )
-
-    # --------------------------------------------------------
-    # UPTIME DISTRIBUTION
-    # --------------------------------------------------------
+        kpi("AMC GPs", fmt_num(amc_gps), "Selected network", "blue")
 
     section(
         "Uptime Distribution",
-        "GP-level Oct-26 uptime distribution across selected states",
+        "GP-level Oct-26 uptime distribution",
     )
 
-    if uptime_col in filtered.columns:
-
-        uptime = pd.to_numeric(filtered[uptime_col], errors="coerce")
-
+    if len(valid_uptime):
         bins = [-0.001, 0, 30, 50, 75, 85, 90, 95, 98, 100.001]
         labels = [
             "0%",
@@ -887,48 +922,33 @@ else:
             bins=bins,
             labels=labels,
             include_lowest=True,
-            right=True,
         )
 
         dist = (
-            pd.DataFrame({
-                "State": filtered["circle"],
-                "Band": bands,
-            })
+            pd.DataFrame(
+                {
+                    "circle": filtered["circle"],
+                    "band": bands,
+                }
+            )
             .dropna()
-            .groupby(["State", "Band"], observed=False)
+            .groupby(["circle", "band"], observed=False)
             .size()
             .reset_index(name="GPs")
         )
 
         fig = px.bar(
             dist,
-            x="State",
+            x="circle",
             y="GPs",
-            color="Band",
+            color="band",
             barmode="stack",
             text_auto=True,
+            labels={"circle": "", "band": "", "GPs": "GP Count"},
         )
 
-        fig.update_layout(
-            template="plotly_white",
-            height=430,
-            margin=dict(l=10, r=10, t=20, b=10),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.25,
-                x=0,
-            ),
-            plot_bgcolor="white",
-            paper_bgcolor="white",
-        )
-
-        fig.update_xaxes(showgrid=False)
-        fig.update_yaxes(
-            title="GP Count",
-            gridcolor="#eaecf0",
-        )
+        fig = chart_layout(fig, 390)
+        fig.update_yaxes(title="GP Count")
 
         st.plotly_chart(
             fig,
@@ -936,75 +956,50 @@ else:
             config={"displayModeBar": False},
         )
 
-    else:
-        st.info("Oct-26 uptime data is not available.")
-
-    # --------------------------------------------------------
-    # OPERATIONAL BREAKDOWN
-    # --------------------------------------------------------
-
     section(
-        "Operational Breakdown",
-        "HOTO, AMC and fibre coverage by state",
+        "Circle Operational Summary",
+        "HOTO, AMC and uptime metrics by Circle",
     )
 
-    operational = state_summary.rename(
-        columns={
-            "circle": "State",
-            "existing_gps": "Existing GPs",
-            "hoto_done_gps": "HOTO Done",
-            "amc_gps": "AMC GPs",
-        }
-    ).copy()
-
-    # Add raw AMC RKM by state
-    rkm_state = (
-        filtered.loc[filtered["amc_date"].notna()]
-        .groupby("circle")["total_rkm"]
-        .sum()
-        .reset_index()
-        .rename(
-            columns={
-                "circle": "State",
-                "total_rkm": "AMC Fibre RKM",
-            }
+    operational = (
+        filtered.groupby("circle")
+        .agg(
+            GPs=("gp_code", "nunique"),
+            HOTO_Done=("block_hoto_status", lambda x: (x == "Done").sum()),
+            AMC_GPs=("amc_date", lambda x: x.notna().sum()),
+            Avg_Uptime=("oct-26", lambda x: pd.to_numeric(x, errors="coerce").mean()),
         )
+        .reset_index()
     )
-
-    operational = operational.merge(
-        rkm_state,
-        on="State",
-        how="left",
-    )
-
-    operational["AMC Coverage %"] = (
-        operational["AMC GPs"]
-        / operational["Existing GPs"]
-        * 100
-    ).round(1)
 
     operational["HOTO %"] = (
-        operational["HOTO Done"]
-        / operational["Existing GPs"]
-        * 100
+        operational["HOTO_Done"] / operational["GPs"] * 100
     ).round(1)
 
-    operational["AMC Fibre RKM"] = operational["AMC Fibre RKM"].fillna(0)
+    operational["AMC %"] = (
+        operational["AMC_GPs"] / operational["GPs"] * 100
+    ).round(1)
+
+    operational["Avg Uptime"] = operational["Avg_Uptime"].map(
+        lambda x: f"{x:.1f}%" if pd.notna(x) else "—"
+    )
+
+    operational = operational.drop(columns=["Avg_Uptime"])
 
     st.dataframe(
-        operational,
+        operational.rename(columns={"circle": "Circle"}),
         use_container_width=True,
         hide_index=True,
         height=240,
         column_config={
-            "AMC Coverage %": st.column_config.ProgressColumn(
-                "AMC Coverage %",
+            "HOTO %": st.column_config.ProgressColumn(
+                "HOTO %",
                 min_value=0,
                 max_value=100,
                 format="%.1f%%",
             ),
-            "HOTO %": st.column_config.ProgressColumn(
-                "HOTO %",
+            "AMC %": st.column_config.ProgressColumn(
+                "AMC %",
                 min_value=0,
                 max_value=100,
                 format="%.1f%%",
@@ -1012,16 +1007,19 @@ else:
         },
     )
 
-    # --------------------------------------------------------
-    # RAW DATA EXPLORER
-    # --------------------------------------------------------
+
+# ============================================================
+# GP EXPLORER
+# ============================================================
+
+else:
 
     section(
         "GP Data Explorer",
-        "Use the filtered dataset for operational drill-down",
+        "Search and inspect individual GP records using the active filters",
     )
 
-    preview_cols = [
+    explorer_cols = [
         "circle",
         "district",
         "block",
@@ -1033,13 +1031,37 @@ else:
         "oct-26",
     ]
 
-    preview_cols = [c for c in preview_cols if c in filtered.columns]
+    explorer_cols = [c for c in explorer_cols if c in filtered.columns]
+
+    explorer = filtered[explorer_cols].copy()
+
+    rename_map = {
+        "circle": "Circle",
+        "district": "District",
+        "block": "Block",
+        "gp": "GP",
+        "gp_code": "GP Code",
+        "block_hoto_status": "HOTO Status",
+        "amc_date": "AMC Date",
+        "total_rkm": "Total RKM",
+        "oct-26": "Oct-26 Uptime",
+    }
+
+    explorer = explorer.rename(columns=rename_map)
+
+    if "Oct-26 Uptime" in explorer.columns:
+        explorer["Oct-26 Uptime"] = pd.to_numeric(
+            explorer["Oct-26 Uptime"],
+            errors="coerce",
+        )
+
+    st.caption(f"{len(explorer):,} records match the current filters.")
 
     st.dataframe(
-        filtered[preview_cols].head(200),
+        explorer,
         use_container_width=True,
         hide_index=True,
-        height=360,
+        height=560,
     )
 
 
@@ -1050,8 +1072,7 @@ else:
 st.markdown(
     """
     <div class="footer">
-        Rural Connectivity Analytics | GP Wise Data |
-        Built for operational analysis
+        PRATAP | Rural Connectivity Analytics | GP Wise Data
     </div>
     """,
     unsafe_allow_html=True,
