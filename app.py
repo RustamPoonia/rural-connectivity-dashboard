@@ -585,7 +585,6 @@ st.markdown(
     """
     <div class="dashboard-header">
         <div>
-            <div class="eyebrow">Operations Intelligence</div>
             <div class="page-title">Rural Connectivity Dashboard</div>
             <div class="page-subtitle">
                 GP network coverage, HOTO, AMC and operational performance.
