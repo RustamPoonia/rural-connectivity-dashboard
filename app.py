@@ -355,26 +355,83 @@ def chart_layout(fig, height=300):
         margin=dict(l=12, r=12, t=25, b=8),
         paper_bgcolor="white",
         plot_bgcolor="white",
-        font=dict(family="Inter", size=10, color="#344054"),
-        hoverlabel=dict(font_size=10),
+
+        # Explicit dark typography for readability on white charts
+        font=dict(
+            family="Inter",
+            size=10,
+            color="#344054",
+        ),
+        title=dict(
+            font=dict(
+                family="Inter",
+                size=13,
+                color="#101828",
+            )
+        ),
+        hoverlabel=dict(
+            bgcolor="white",
+            bordercolor="#d0d5dd",
+            font=dict(
+                family="Inter",
+                size=10,
+                color="#101828",
+            ),
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.01,
             x=0,
-            font=dict(size=9),
+            font=dict(
+                family="Inter",
+                size=9,
+                color="#344054",
+            ),
         ),
     )
+
     fig.update_xaxes(
         showgrid=False,
-        linecolor="#e4e7ec",
+        linecolor="#d0d5dd",
         title=None,
+        tickfont=dict(
+            family="Inter",
+            size=10,
+            color="#475467",
+        ),
+        title_font=dict(
+            family="Inter",
+            size=10,
+            color="#344054",
+        ),
     )
+
     fig.update_yaxes(
         gridcolor="#eaecf0",
         zeroline=False,
         title=None,
+        tickfont=dict(
+            family="Inter",
+            size=10,
+            color="#475467",
+        ),
+        title_font=dict(
+            family="Inter",
+            size=10,
+            color="#344054",
+        ),
     )
+
+    # Make bar/point labels readable instead of inheriting low-contrast defaults.
+    fig.update_traces(
+        textfont=dict(
+            family="Inter",
+            size=10,
+            color="#344054",
+        )
+    )
+
     return fig
 
 
